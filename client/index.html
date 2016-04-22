@@ -3,5 +3,11 @@
 </head>
 
 <body>
-  Check console for output
+  <div ng-controller="AppCtrl as vm">
+
+  <p ng-if="$auth.currentUser">Hello {{$auth.currentUser.username}}</p>
+  <button ng-if="!$auth.currentUser" ng-click="vm.login()">LOGIN</button>
+  <div ui-view></div>
+</div>
+<a target="_blank" href="/">ctrl+click to open tab</a>
 </body>

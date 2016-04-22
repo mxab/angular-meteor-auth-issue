@@ -1,24 +1,67 @@
-import angular from 'angular'
-import 'angular-meteor'
-import 'angular-meteor-auth'
+import angular from 'angular';
+import 'angular-meteor';
+import 'angular-meteor-auth';
+import 'angular-ui-router';
+
+function testAwait($auth, $timeout,$log) {
+    const awaitUser = $auth.awaitUser();
+    $log.debug("awaitUser in AUTH");
+    let done = false;
+
+    awaitUser.finally(() => {
+        done = true;
+        $log.debug('DONE AWAITING USER');
+    });
+    $timeout(function() {
+        if (!done) {
+            $log.debug('NOT DONE AFTER 5 Seconds');
+        }
+
+    }, 5000)
+
+}
+angular.module('app', ['angular-meteor', 'angular-meteor.auth', 'ui.router'])
+    .controller('AppCtrl', function() {
+        this.login = () => {
+            Meteor.loginWithPassword('test', 'test');
+        }
+    })
+    .run(testAwait)
+    .run(testAwait)
+    .run(testAwait)
+    .run(testAwait)
+    .run(testAwait)
+    .run(testAwait)
+    .run(testAwait)
+
+.config(function($stateProvider, $locationProvider, $urlRouterProvider) {
 
 
-angular.module('app',['angular-meteor','angular-meteor.auth'])
-.run(function($auth,$log){
-  $log.info('$auth testing');
-  $auth.requireUser().then(u=>{
-    $log.info('requireUser SUCCESS',u);
+    $locationProvider.html5Mode({
+        enabled: true,
+        requireBase: false
+    })
+    $urlRouterProvider.otherwise('/')
+    $stateProvider
+        .state('home', {
+            url: '/',
+            template: "<div><p>This is the member area</p></div>",
+            controller: function($log) {
+                $log.info("in member areae")
+            },
+            resolve: {
+                'currentUser': function($auth, $log) {
+                    const awaitUser = $auth.awaitUser();
+                    $log.debug("awaitUser in AUTH");
+                    awaitUser.finally(() => {
+                        $log.debug('DONE AWAITING USER');
+                    });
+                    return awaitUser;
+                }
+            }
+        });
+});
 
-  }, err=>{
-    $log.warn('requireUser ERROR',err);
-  });
-  $auth.waitForUser().then(u=>{
-    $log.info('waitForUser SUCCESS',u);
-  }, err=>{
-    $log.warn('waitForUser ERROR',err);
-  });
-})
-
-Meteor.startup(function(){
-  angular.bootstrap(document.body, ['app']);
+Meteor.startup(function() {
+    angular.bootstrap(document.body, ['app']);
 })
